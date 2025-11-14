@@ -7,7 +7,7 @@ RUN npm install --production
 
 COPY . .
 
-EXPOSE 4040
+EXPOSE 4050
 
 CMD ["node", "server.js"]
 

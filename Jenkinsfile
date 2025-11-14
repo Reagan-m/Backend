@@ -45,7 +45,7 @@ pipeline {
                     --name ${CONTAINER_NAME} \
                     --env-file .env \
                     --network ${NETWORK_NAME} \
-                    -p 4040:4040 \
+                    -p 4050:4050 \
                     ${DOCKER_IMAGE}
                 """
             }

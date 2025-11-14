@@ -4,7 +4,9 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/Reagan-m/Backend.git'
+                git branch: 'main',
+                    url: 'https://github.com/Reagan-m/backend.git',
+                    credentialsId: 'github-credentials'
             }
         }
 
@@ -14,11 +16,24 @@ pipeline {
             }
         }
 
-        stage('Run Docker Container') {
+        stage('Stop Old Container') {
             steps {
                 sh '''
-                docker rm -f backend-container || true
-                docker run -d -p 5000:5000 --name backend-container backend-app
+                if [ $(docker ps -aq -f name=backend-container) ]; then
+                    docker stop backend-container || true
+                    docker rm backend-container || true
+                fi
+                '''
+            }
+        }
+
+        stage('Run New Container') {
+            steps {
+                sh '''
+                docker run -d --name backend-container \
+                -p 4040:4040 \
+                --env-file .env \
+                backend-app
                 '''
             }
         }

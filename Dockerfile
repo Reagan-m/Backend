@@ -8,14 +8,14 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install --omit=dev
+RUN npm install 
 
 # Copy the rest of the project
 COPY . .
 
 # Expose port
-EXPOSE 5000
+EXPOSE 4040
 
 # Start the app
-CMD ["node", "server.js"]
+CMD ["npm", "start"]
 

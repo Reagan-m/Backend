@@ -2,14 +2,12 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "backend-app"
+        IMAGE_NAME = "backend-app"
         CONTAINER_NAME = "backend-container"
-        NETWORK_NAME   = "my-network"
     }
 
     stages {
-
-        stage('Checkout Code') {
+        stage('Clone Repository') {
             steps {
                 git branch: 'main',
                     url: 'https://github.com/Reagan-m/backend.git',
@@ -17,46 +15,28 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
-            steps {
-                sh 'npm install'
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t ${DOCKER_IMAGE} ."
+                sh 'docker build -t ${IMAGE_NAME} .'
             }
         }
 
         stage('Stop Old Container') {
             steps {
-                sh """
-                  docker stop ${CONTAINER_NAME} || true
-                  docker rm ${CONTAINER_NAME} || true
-                """
+                sh '''
+                if [ "$(docker ps -aq -f name=${CONTAINER_NAME})" ]; then
+                    docker stop ${CONTAINER_NAME} || true
+                    docker rm ${CONTAINER_NAME} || true
+                fi
+                '''
             }
         }
 
         stage('Run New Container') {
             steps {
-                sh """
-                  docker run -d \
-                    --name ${CONTAINER_NAME} \
-                    --env-file .env \
-                    --network ${NETWORK_NAME} \
-                    -p 4050:4050 \
-                    ${DOCKER_IMAGE}
-                """
+                sh 'docker run -d --env-file .env --name ${CONTAINER_NAME} -p 4050:4050 --link mongo:mongo ${IMAGE_NAME}'
             }
         }
     }
-
-    post {
-        always {
-            echo 'Pipeline execution completed.'
-        }
-    }
 }
-
 

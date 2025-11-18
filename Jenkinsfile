@@ -13,23 +13,22 @@ pipeline {
         sh 'npm test || true'   // keep pipeline running even if no tests
       }
     }
-    stage('Build Docker Image') {
-      steps {
+  stage('Build Docker Image') {
+    steps {
         sh "docker build -t ${IMAGE} ."
       }
     }
-    stage('Deploy') {
-      steps {
-        // stop & remove old container, run new one (adjust env-file path if any)
-        sh """
-          docker ps -q --filter "name=${CONTAINER_NAME}" | grep -q . && docker rm -f ${CONTAINER_NAME} || true
-          docker run -d --name ${CONTAINER_NAME} -p ${PORT}:${PORT} ${IMAGE}
-        """
-      }
+  stage('Deploy') {
+    steps {
+        sh '''
+        # stop old container if running
+        docker stop backend-service || true
+        docker rm backend-service || true
+
+        # run new container
+        docker run -d --name backend-service -p 4040:4040 backend-app:${env.BUILD_NUMBER}
+        '''
     }
-  }
-  post {
-    always { sh 'docker images --filter=reference="backend-app*" || true' }
-  }
 }
+
 
